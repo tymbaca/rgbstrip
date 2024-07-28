@@ -2,6 +2,7 @@ package model
 
 import (
 	"image"
+	"image/color"
 )
 
 type Resolution struct {
@@ -20,3 +21,8 @@ const (
 	UpperEdge Edge = 1
 	RightEdge Edge = 2
 )
+
+type SegmentInfo struct {
+	Rect  image.Rectangle
+	Color color.RGBA
+}

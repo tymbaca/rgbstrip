@@ -2,3 +2,6 @@
 app
 .vscode
 .DS_Store
+profile*
+*.out
+*.test

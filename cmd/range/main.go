@@ -18,8 +18,15 @@ func main() {
 	log.Println("got webcam")
 
 	window := gocv.NewWindow("Hello")
-	w2 := gocv.NewWindow("w2")
+	// w2 := gocv.NewWindow("w2")
 	imgMat := gocv.NewMat()
+	svc := leds.Service{
+		SegCount:          60,
+		SegOffset:         10,
+		SegLength:         100,
+		SegWidth:          80,
+		DominantColorFunc: cenkalti.Find,
+	}
 
 	for {
 		// order of colors is BGR, not RGB
@@ -33,30 +40,29 @@ func main() {
 		_, _, _ = rows, cols, matType
 		_ = origImg
 
+		svc.Screen = model.Resolution{
+			Width:  origImg.Bounds().Dx(),
+			Height: origImg.Bounds().Dy(),
+		}
+
 		//--------------------------------------------------------------------------------------------------
 
-		svc := leds.Service{
-			Screen: model.Resolution{
-				Width:  origImg.Bounds().Dx(),
-				Height: origImg.Bounds().Dy(),
-			},
-			SegCount:          120,
-			SegOffset:         100,
-			SegLength:         60,
-			SegWidth:          80,
-			DominantColorFunc: cenkalti.Find,
-		}
-
-		colors, err := svc.GetColors(origImg)
+		segments, err := svc.GetColorsWithInfo(origImg)
 		if err != nil {
 			panic(err)
 		}
-		debugImg := Must(ComposeColors(50, 30, 1, 120, colors))
-
-		debugMat, err := gocv.ImageToMatRGB(debugImg)
+		resultImg := DrawSegments(origImg, segments...)
+		imgMat, err = gocv.ImageToMatRGB(resultImg)
 		if err != nil {
 			panic(err)
 		}
+
+		// debugImg := Must(ComposeColors(50, 60, 1, 60, colors))
+
+		// debugMat, err := gocv.ImageToMatRGB(debugImg)
+		// if err != nil {
+		// 	panic(err)
+		// }
 
 		// for row := range rows {
 		// 	for col := range cols {
@@ -75,7 +81,7 @@ func main() {
 		// 	panic(err)
 		// }
 
-		w2.IMShow(debugMat)
+		// w2.IMShow(debugMat)
 
 		window.IMShow(imgMat)
 		window.WaitKey(1)

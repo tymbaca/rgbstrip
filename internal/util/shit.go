@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"os"
 
+	"github.com/tymbaca/rgbstrip/internal/model"
 	"gocv.io/x/gocv"
 )
 
@@ -16,6 +17,20 @@ func Must[T any](v T, err error) T {
 	}
 
 	return v
+}
+
+func ImageToRGBA(src image.Image) *image.RGBA {
+
+	// No conversion needed if image is an *image.RGBA.
+	if dst, ok := src.(*image.RGBA); ok {
+		return dst
+	}
+
+	// Use the image/draw package to convert to *image.RGBA.
+	b := src.Bounds()
+	dst := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
+	return dst
 }
 
 func ComposeColors(cellHeight, cellWidth int, rows, cols int, colors []color.RGBA) (image.Image, error) {
@@ -81,4 +96,19 @@ func LoadJPEG(filename string) (image.Image, error) {
 	}
 
 	return img, nil
+}
+
+func DrawSegments(src image.Image, segs ...model.SegmentInfo) image.Image {
+	if len(segs) == 0 {
+		return src
+	}
+
+	b := src.Bounds()
+	dst := ImageToRGBA(src)
+	for _, seg := range segs {
+		colorImg := image.NewUniform(seg.Color)
+		draw.Draw(dst, seg.Rect, colorImg, b.Min, draw.Over)
+	}
+
+	return dst
 }

@@ -5,20 +5,52 @@ import (
 	"image/color"
 	"log"
 
+	"github.com/anthonynsimon/bild/transform"
 	"github.com/tymbaca/rgbstrip/internal/model"
 	"github.com/tymbaca/rgbstrip/internal/util/subimage"
 )
 
+func (s *Service) GetColorsWithInfo(img image.Image) ([]model.SegmentInfo, error) {
+	points, segRects, _, dominants, err := s.calculateAll(img)
+	if err != nil {
+		return nil, err
+	}
+
+	segments := make([]model.SegmentInfo, len(points))
+	for i := range points {
+		segments[i] = model.SegmentInfo{
+			Rect:  segRects[i],
+			Color: dominants[i],
+		}
+	}
+
+	return segments, nil
+}
+
 func (s *Service) GetColors(img image.Image) ([]color.RGBA, error) {
-	points := s.getPoints()
-	segRects := s.getSegmentsRects(points)
-	segments := s.getSegments(img, segRects)
-	dominants, err := s.getDominants(segments)
+	_, _, _, dominants, err := s.calculateAll(img)
 	if err != nil {
 		return nil, err
 	}
 
 	return dominants, nil
+}
+
+func (s *Service) calculateAll(img image.Image) ([]model.PathPoint, []image.Rectangle, []image.Image, []color.RGBA, error) {
+	points := s.getPoints()
+	segRects := s.getSegmentsRects(points)
+	segSrcs := s.getSegments(img, segRects)
+
+	for i := range segSrcs {
+		segSrcs[i] = resizeImage(segSrcs[i], 0.1)
+	}
+
+	dominants, err := s.getDominants(segSrcs)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return points, segRects, segSrcs, dominants, nil
 }
 
 func (s *Service) getPoints() []model.PathPoint {
@@ -115,6 +147,11 @@ func (s *Service) getDominants(segments []image.Image) ([]color.RGBA, error) {
 	return dominants, nil
 }
 
-// func resizeJPEG(img image.Image, width, height uint) (image.Image, error) {
-// 	return resize.Resize(width, height, img, resize.Bilinear), nil
-// }
+// factor must be positive number
+func resizeImage(img image.Image, factor float32) image.Image {
+	// width := uint(float32(img.Bounds().Dx()) * factor)
+	// return resize.Resize(width, 0, img, resize.NearestNeighbor)
+	width := int(float32(img.Bounds().Dx()) * factor)
+	height := int(float32(img.Bounds().Dy()) * factor)
+	return transform.Resize(img, width, height, transform.NearestNeighbor)
+}
