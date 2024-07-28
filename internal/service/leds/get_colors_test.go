@@ -8,13 +8,6 @@ import (
 	"github.com/tymbaca/rgbstrip/internal/util"
 )
 
-const (
-	_segCount  = 60
-	_segOffset = 10
-	_segLength = 60
-	_segWidth  = 80
-)
-
 // v0
 // BenchmarkGetColors/full-8         	      34	  34371533 ns/op	 6945179 B/op	 1955915 allocs/op
 // BenchmarkGetColors/get_points-8   	 4604133	       261.9 ns/op	    3072 B/op	       1 allocs/op
@@ -45,57 +38,21 @@ const (
 // BenchmarkGetColors/rgba-8        	    1826	    595702 ns/op	  377386 B/op	    4833 allocs/op
 // BenchmarkGetColorsWithInfo/rgba-8        1852	    595068 ns/op	  379989 B/op	    4834 allocs/op
 
+// v2 -
+// _segCount  = 60
+// _segOffset = 10
+// _segLength = 60
+// _segWidth  = 80
+// BenchmarkGetColors/rgba-8        	    1826	    595702 ns/op	  377386 B/op	    4833 allocs/op
+
+const (
+	_segCount  = 60
+	_segOffset = 10
+	_segLength = 100
+	_segWidth  = 20
+)
+
 func BenchmarkGetColors(b *testing.B) {
-	b.Run("jpg_GetColors", func(b *testing.B) {
-		img, err := util.LoadJPEG("testdata/selfie.jpg")
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		svc := Service{
-			Screen: model.Resolution{
-				Width:  img.Bounds().Dx(),
-				Height: img.Bounds().Dy(),
-			},
-			SegCount:          _segCount,
-			SegOffset:         _segOffset,
-			SegLength:         _segLength,
-			SegWidth:          _segWidth,
-			DominantColorFunc: cenkalti.Find,
-		}
-
-		for range b.N {
-			_, err := svc.GetColors(img)
-			if err != nil {
-				b.Fatal(err)
-			}
-		}
-	})
-	b.Run("jpg_WithInfo", func(b *testing.B) {
-		img, err := util.LoadJPEG("testdata/selfie.jpg")
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		svc := Service{
-			Screen: model.Resolution{
-				Width:  img.Bounds().Dx(),
-				Height: img.Bounds().Dy(),
-			},
-			SegCount:          _segCount,
-			SegOffset:         _segOffset,
-			SegLength:         _segLength,
-			SegWidth:          _segWidth,
-			DominantColorFunc: cenkalti.Find,
-		}
-
-		for range b.N {
-			_, err := svc.GetColorsWithInfo(img)
-			if err != nil {
-				b.Fatal(err)
-			}
-		}
-	})
 	b.Run("rgba_GetColors", func(b *testing.B) {
 		img, err := util.LoadJPEG("testdata/selfie.jpg")
 		if err != nil {
@@ -120,71 +77,6 @@ func BenchmarkGetColors(b *testing.B) {
 			_, err := svc.GetColors(img)
 			if err != nil {
 				b.Fatal(err)
-			}
-		}
-	})
-	b.Run("rgba_WithInfo", func(b *testing.B) {
-		img, err := util.LoadJPEG("testdata/selfie.jpg")
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		img = util.ImageToRGBA(img)
-
-		svc := Service{
-			Screen: model.Resolution{
-				Width:  img.Bounds().Dx(),
-				Height: img.Bounds().Dy(),
-			},
-			SegCount:          _segCount,
-			SegOffset:         _segOffset,
-			SegLength:         _segLength,
-			SegWidth:          _segWidth,
-			DominantColorFunc: cenkalti.Find,
-		}
-
-		for range b.N {
-			_, err := svc.GetColorsWithInfo(img)
-			if err != nil {
-				b.Fatal(err)
-			}
-		}
-	})
-}
-
-func BenchmarkGetColorsWithInfo(b *testing.B) {
-}
-
-func BenchmarkImageFormats(b *testing.B) {
-	b.Run("JPEG", func(b *testing.B) {
-		img, err := util.LoadJPEG("testdata/selfie.jpg")
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		for range b.N {
-			for y := range img.Bounds().Dy() {
-				for x := range img.Bounds().Dx() {
-					c := img.At(x, y)
-					_ = c
-				}
-			}
-		}
-	})
-
-	b.Run("RGBA", func(b *testing.B) {
-		img, err := util.LoadJPEG("testdata/selfie.jpg")
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		img = util.ImageToRGBA(img)
-		for range b.N {
-			for y := range img.Bounds().Dy() {
-				for x := range img.Bounds().Dx() {
-					c := img.At(x, y)
-					_ = c
-				}
 			}
 		}
 	})

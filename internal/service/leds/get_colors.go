@@ -149,8 +149,6 @@ func (s *Service) getDominants(segments []image.Image) ([]color.RGBA, error) {
 
 // factor must be positive number
 func resizeImage(img image.Image, factor float32) image.Image {
-	// width := uint(float32(img.Bounds().Dx()) * factor)
-	// return resize.Resize(width, 0, img, resize.NearestNeighbor)
 	width := int(float32(img.Bounds().Dx()) * factor)
 	height := int(float32(img.Bounds().Dy()) * factor)
 	return transform.Resize(img, width, height, transform.NearestNeighbor)

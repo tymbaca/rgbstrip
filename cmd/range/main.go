@@ -6,8 +6,16 @@ import (
 	"github.com/tymbaca/rgbstrip/internal/dominant/cenkalti"
 	"github.com/tymbaca/rgbstrip/internal/model"
 	"github.com/tymbaca/rgbstrip/internal/service/leds"
-	. "github.com/tymbaca/rgbstrip/internal/util"
+
+	"github.com/tymbaca/rgbstrip/internal/util"
 	"gocv.io/x/gocv"
+)
+
+const (
+	_segCount  = 120
+	_segOffset = 10
+	_segLength = 120
+	_segWidth  = 80
 )
 
 func main() {
@@ -21,10 +29,10 @@ func main() {
 	// w2 := gocv.NewWindow("w2")
 	imgMat := gocv.NewMat()
 	svc := leds.Service{
-		SegCount:          60,
-		SegOffset:         10,
-		SegLength:         100,
-		SegWidth:          80,
+		SegCount:          _segCount,
+		SegOffset:         _segOffset,
+		SegLength:         _segLength,
+		SegWidth:          _segWidth,
 		DominantColorFunc: cenkalti.Find,
 	}
 
@@ -51,37 +59,13 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		resultImg := DrawSegments(origImg, segments...)
+		resultImg := util.DrawSegments(origImg, segments...)
 		imgMat, err = gocv.ImageToMatRGB(resultImg)
 		if err != nil {
 			panic(err)
 		}
 
-		// debugImg := Must(ComposeColors(50, 60, 1, 60, colors))
-
-		// debugMat, err := gocv.ImageToMatRGB(debugImg)
-		// if err != nil {
-		// 	panic(err)
-		// }
-
-		// for row := range rows {
-		// 	for col := range cols {
-		// 		r, g, b, a := img.At(col, row).RGBA()
-		// 		_, _, _, _ = r, g, b, a
-		// 		// log.Printf("RGBA: %d, %d, %d, %d\n", r, g, b, a)
-		// 	}
-		// }
-
-		// break
-
 		//--------------------------------------------------------------------------------------------------
-
-		// mat, err = gocv.NewMatFromBytes(rows, cols, matType, buf.Bytes())
-		// if err != nil {
-		// 	panic(err)
-		// }
-
-		// w2.IMShow(debugMat)
 
 		window.IMShow(imgMat)
 		window.WaitKey(1)
