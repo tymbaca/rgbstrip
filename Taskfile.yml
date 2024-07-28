@@ -1,0 +1,10 @@
+version: 3
+
+dotenv:
+  - .env
+
+tasks:
+  default: 
+    - go build -tags customenv -o app ./cmd/range/
+    - ./app {{.ARGS}}
+  run: go run ./cmd/run
