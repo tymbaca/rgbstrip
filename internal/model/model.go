@@ -2,10 +2,7 @@ package model
 
 import (
 	"image"
-	"image/color"
 )
-
-type DominantColorFunc func(image.Image) color.RGBA
 
 type Resolution struct {
 	Width, Height int

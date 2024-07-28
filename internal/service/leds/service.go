@@ -1,6 +1,7 @@
 package leds
 
 import (
+	"github.com/tymbaca/rgbstrip/internal/dominant"
 	"github.com/tymbaca/rgbstrip/internal/model"
 )
 
@@ -13,5 +14,5 @@ type Service struct {
 	SegOffset         int
 	SegLength         int
 	SegWidth          int
-	DominantColorFunc model.DominantColorFunc
+	DominantColorFunc dominant.DominantColorFunc
 }

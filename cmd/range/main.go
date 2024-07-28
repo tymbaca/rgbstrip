@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/cenkalti/dominantcolor"
+	"github.com/tymbaca/rgbstrip/internal/dominant/cenkalti"
 	"github.com/tymbaca/rgbstrip/internal/model"
 	"github.com/tymbaca/rgbstrip/internal/service/leds"
 	. "github.com/tymbaca/rgbstrip/internal/util"
@@ -44,10 +44,13 @@ func main() {
 			SegOffset:         100,
 			SegLength:         60,
 			SegWidth:          80,
-			DominantColorFunc: dominantcolor.Find,
+			DominantColorFunc: cenkalti.Find,
 		}
 
-		colors := svc.GetColors(origImg)
+		colors, err := svc.GetColors(origImg)
+		if err != nil {
+			panic(err)
+		}
 		debugImg := Must(ComposeColors(50, 30, 1, 120, colors))
 
 		debugMat, err := gocv.ImageToMatRGB(debugImg)

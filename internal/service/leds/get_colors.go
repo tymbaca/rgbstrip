@@ -9,13 +9,16 @@ import (
 	"github.com/tymbaca/rgbstrip/internal/util/subimage"
 )
 
-func (s *Service) GetColors(img image.Image) []color.RGBA {
+func (s *Service) GetColors(img image.Image) ([]color.RGBA, error) {
 	points := s.getPoints()
 	segRects := s.getSegmentsRects(points)
 	segments := s.getSegments(img, segRects)
-	dominants := s.getDominants(segments)
+	dominants, err := s.getDominants(segments)
+	if err != nil {
+		return nil, err
+	}
 
-	return dominants
+	return dominants, nil
 }
 
 func (s *Service) getPoints() []model.PathPoint {
@@ -98,12 +101,20 @@ func (s *Service) getSegments(img image.Image, rects []image.Rectangle) []image.
 	return segments
 }
 
-func (s *Service) getDominants(segments []image.Image) []color.RGBA {
+func (s *Service) getDominants(segments []image.Image) ([]color.RGBA, error) {
 	dominants := make([]color.RGBA, len(segments))
+	var err error
 
 	for i, seg := range segments {
-		dominants[i] = s.DominantColorFunc(seg)
+		dominants[i], err = s.DominantColorFunc(seg)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return dominants
+	return dominants, nil
 }
+
+// func resizeJPEG(img image.Image, width, height uint) (image.Image, error) {
+// 	return resize.Resize(width, height, img, resize.Bilinear), nil
+// }
