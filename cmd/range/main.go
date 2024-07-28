@@ -4,7 +4,9 @@ import (
 	"log"
 
 	"github.com/cenkalti/dominantcolor"
-	"github.com/tymbaca/rgbstrip/internal/util"
+	"github.com/tymbaca/rgbstrip/internal/model"
+	"github.com/tymbaca/rgbstrip/internal/service/leds"
+	. "github.com/tymbaca/rgbstrip/internal/util"
 	"gocv.io/x/gocv"
 )
 
@@ -17,37 +19,38 @@ func main() {
 
 	window := gocv.NewWindow("Hello")
 	w2 := gocv.NewWindow("w2")
-	imgmat := gocv.NewMat()
+	imgMat := gocv.NewMat()
 
 	for {
 		// order of colors is BGR, not RGB
-		webcam.Read(&imgmat)
-		rows, cols, matType := imgmat.Rows(), imgmat.Cols(), imgmat.Type()
-		img, err := imgmat.ToImage()
+		webcam.Read(&imgMat)
+		rows, cols, matType := imgMat.Rows(), imgMat.Cols(), imgMat.Type()
+		origImg, err := imgMat.ToImage()
 		if err != nil {
 			panic(err)
 		}
 
 		_, _, _ = rows, cols, matType
-		_ = img
-
-		// data := mat.ToBytes()
-		// log.Printf("rows: %d, cols: %d, mat type: %#v, size: %d", rows, cols, matType, len(bytes))
+		_ = origImg
 
 		//--------------------------------------------------------------------------------------------------
 
-		dominant := dominantcolor.Find(img)
-		log.Printf("dominant: %v\n", dominant)
-		dominantMat := util.MustColorMat(100, 100, dominant)
+		svc := leds.Service{
+			Screen: model.Resolution{
+				Width:  origImg.Bounds().Dx(),
+				Height: origImg.Bounds().Dy(),
+			},
+			SegCount:          120,
+			SegOffset:         100,
+			SegLength:         60,
+			SegWidth:          80,
+			DominantColorFunc: dominantcolor.Find,
+		}
 
-		// log.Printf("RGB: %d, %d, %d (next: %d)\n", bytes[0], bytes[1], bytes[2], bytes[3])
+		colors := svc.GetColors(origImg)
+		debugImg := Must(ComposeColors(50, 30, 1, 120, colors))
 
-		// f, err := os.Create("selfie.jpeg")
-		// if err != nil {
-		// 	panic(err)
-		// }
-
-		imgmat, err = gocv.ImageToMatRGB(img)
+		debugMat, err := gocv.ImageToMatRGB(debugImg)
 		if err != nil {
 			panic(err)
 		}
@@ -69,9 +72,9 @@ func main() {
 		// 	panic(err)
 		// }
 
-		w2.IMShow(dominantMat)
+		w2.IMShow(debugMat)
 
-		window.IMShow(imgmat)
+		window.IMShow(imgMat)
 		window.WaitKey(1)
 	}
 }

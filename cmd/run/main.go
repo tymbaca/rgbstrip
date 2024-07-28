@@ -37,7 +37,7 @@ func run() error {
 
 	colors := svc.GetColors(img)
 
-	err = util.DisplayColors(100, 100, 16, 10, colors)
+	err = util.ComposeColors(100, 100, 16, 10, colors)
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,15 @@ import (
 	"gocv.io/x/gocv"
 )
 
-func DisplayColors(cellHeight, cellWidth int, rows, cols int, colors []color.RGBA) error {
+func Must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
+func ComposeColors(cellHeight, cellWidth int, rows, cols int, colors []color.RGBA) (image.Image, error) {
 	img := image.NewRGBA(image.Rect(0, 0, cellWidth*cols, cellHeight*rows))
 
 	for i, c := range colors {
@@ -30,15 +38,15 @@ func DisplayColors(cellHeight, cellWidth int, rows, cols int, colors []color.RGB
 
 	f, err := os.Create("colors.out.jpg")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = jpeg.Encode(f, img, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return img, nil
 }
 
 func MustColorMat(rows, cols int, clr color.Color) gocv.Mat {
