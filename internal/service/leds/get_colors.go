@@ -8,6 +8,7 @@ import (
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/tymbaca/rgbstrip/internal/model"
 	"github.com/tymbaca/rgbstrip/internal/util/subimage"
+	"golang.org/x/sync/errgroup"
 )
 
 func (s *Service) GetColorsWithInfo(img image.Image) ([]model.SegmentInfo, error) {
@@ -136,12 +137,21 @@ func (s *Service) getSegments(img image.Image, rects []image.Rectangle) []image.
 func (s *Service) getDominants(segments []image.Image) ([]color.RGBA, error) {
 	dominants := make([]color.RGBA, len(segments))
 	var err error
+	g := errgroup.Group{}
 
 	for i, seg := range segments {
-		dominants[i], err = s.DominantColorFunc(seg)
-		if err != nil {
-			return nil, err
-		}
+		g.Go(func() error {
+			dominants[i], err = s.DominantColorFunc(seg)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return nil, err
 	}
 
 	return dominants, nil
